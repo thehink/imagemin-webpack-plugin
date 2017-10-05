@@ -99,7 +99,6 @@ export default class ImageminPlugin {
         if(this.options.webp){
           const imageminOptions = {
             plugins: [
-              ...this.options.imageminOptions.plugins,
               imageminWebP(this.options.webp)
             ]
           }

@@ -549,7 +549,7 @@ var ImageminPlugin = function () {
 
                   if (_this.options.webp) {
                     imageminOptions = {
-                      plugins: [].concat((0, _toConsumableArray3.default)(_this.options.imageminOptions.plugins), [(0, _imageminWebp2.default)(_this.options.webp)])
+                      plugins: [(0, _imageminWebp2.default)(_this.options.webp)]
                     };
 
 
