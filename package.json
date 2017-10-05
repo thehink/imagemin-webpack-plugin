@@ -49,6 +49,7 @@
     "imagemin-optipng": "^5.1.0",
     "imagemin-pngquant": "^5.0.1",
     "imagemin-svgo": "^5.2.2",
+    "imagemin-webp": "^4.0.0",
     "lodash.map": "^4.6.0",
     "minimatch": "^3.0.4",
     "webpack-sources": "^1.0.1"

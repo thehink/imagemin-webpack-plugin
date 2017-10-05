@@ -10,6 +10,7 @@ import imageminOptipng from 'imagemin-optipng'
 import imageminPngquant from 'imagemin-pngquant'
 import imageminGifsicle from 'imagemin-gifsicle'
 import imageminJpegtran from 'imagemin-jpegtran'
+import imageminWebP from 'imagemin-webp'
 import RawSource from 'webpack-sources/lib/RawSource'
 
 export default class ImageminPlugin {
@@ -36,7 +37,8 @@ export default class ImageminPlugin {
       externalImages = {
         sources: [],
         destination: null
-      }
+      },
+      webp = null
     } = options
 
     this.options = {
@@ -47,6 +49,7 @@ export default class ImageminPlugin {
       imageminOptions: {
         plugins: []
       },
+      webp,
       testRegexes: compileTestOption(test),
       externalImages
     }
@@ -88,10 +91,23 @@ export default class ImageminPlugin {
       }
 
       try {
-        await Promise.all([
+        const work = [
           optimizeWebpackImages(throttle, compilation, testRegexes, minFileSize, maxFileSize, this.options.imageminOptions),
           optimizeExternalImages(throttle, sources, destination, minFileSize, maxFileSize, this.options.imageminOptions)
-        ])
+        ]
+
+        if(this.options.webp){
+          const imageminOptions = {
+            plugins: [
+              ...this.options.imageminOptions.plugins,
+              imageminWebP(this.options.webp)
+            ]
+          }
+
+          work.push(optimizeWebpackImages(throttle, compilation, testRegexes, minFileSize, maxFileSize, imageminOptions, '.webp'))
+        }
+
+        await Promise.all(work)
         // At this point everything is done, so call the callback without anything in it
         callback()
       } catch (err) {
@@ -111,7 +127,7 @@ export default class ImageminPlugin {
  * @param  {Object} imageminOptions  Options to pass to imageminOptions
  * @return {Promise}                 Resolves when all images are done being optimized
  */
-async function optimizeWebpackImages (throttle, compilation, testRegexes, minFileSize, maxFileSize, imageminOptions) {
+async function optimizeWebpackImages (throttle, compilation, testRegexes, minFileSize, maxFileSize, imageminOptions, overwriteExt) {
   return Promise.all(map(compilation.assets, (asset, filename) => throttle(async () => {
     const assetSource = asset.source()
     // Skip the image if it's not a match for the regex
@@ -119,7 +135,12 @@ async function optimizeWebpackImages (throttle, compilation, testRegexes, minFil
       // Optimize the asset's source
       const optimizedImageBuffer = await optimizeImage(assetSource, imageminOptions)
       // Then write the optimized version back to the asset object as a "raw source"
-      compilation.assets[filename] = new RawSource(optimizedImageBuffer)
+
+      const filext = path.extname(filename);
+      const basename = path.basename(filename, filext);
+      const newFilename = `${basename}${overwriteExt ? overwriteExt : filext}`;
+
+      compilation.assets[newFilename] = new RawSource(optimizedImageBuffer)
     }
   })))
 }
