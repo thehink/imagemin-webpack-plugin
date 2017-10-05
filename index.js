@@ -136,9 +136,9 @@ async function optimizeWebpackImages (throttle, compilation, testRegexes, minFil
       const optimizedImageBuffer = await optimizeImage(assetSource, imageminOptions)
       // Then write the optimized version back to the asset object as a "raw source"
 
-      const filext = path.extname(filename);
-      const basename = path.basename(filename, filext);
-      const newFilename = `${basename}${overwriteExt ? overwriteExt : filext}`;
+      const filext = path.extname(filename)
+      const basename = path.basename(filename, filext)
+      const newFilename = `${basename}${overwriteExt ? overwriteExt : filext}`
 
       compilation.assets[newFilename] = new RawSource(optimizedImageBuffer)
     }
